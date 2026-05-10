@@ -6,7 +6,7 @@ Felipe Beserra de Oliveira
 ---
 
 ## Número USP
-Seu Número USP Aqui
+Número USP Aqui
 
 ---
 
@@ -30,8 +30,8 @@ O LED RGB da FRDM-KL25Z utiliza lógica ativa em nível baixo (*active low*), ou
 O programa implementa o comportamento de um semáforo simples:
 
 1. Vermelho ligado por 5 segundos
-2. Amarelo (vermelho + verde) por 2 segundos
-3. Verde ligado por 5 segundos
+2. Verde ligado por 5 segundos
+3. Amarelo (vermelho + verde) por 2 segundos
 4. Repetição contínua do ciclo
 
 Durante o desenvolvimento foi necessário adaptar os includes do Zephyr para versões mais recentes do framework, substituindo:
@@ -106,10 +106,10 @@ void green_on(void)
     gpio_pin_set(gpiob, GREEN_PIN, 0);
 }
 
-void main(void)
+int main(void)
 {
     if (!device_is_ready(gpiob) || !device_is_ready(gpiod)) {
-        return;
+        return -1;
     }
 
     /* Configure pins as outputs */
@@ -123,14 +123,16 @@ void main(void)
         red_on();
         k_msleep(5000);
 
-        /* YELLOW */
-        yellow_on();
-        k_msleep(2000);
-
         /* GREEN */
         green_on();
         k_msleep(5000);
+
+		/* YELLOW */
+        yellow_on();
+        k_msleep(2000);
     }
+	
+    return 0;
 }
 ```
 
