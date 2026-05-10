@@ -43,10 +43,10 @@ void green_on(void)
     gpio_pin_set(gpiob, GREEN_PIN, 0);
 }
 
-void main(void)
+int main(void)
 {
     if (!device_is_ready(gpiob) || !device_is_ready(gpiod)) {
-        return;
+        return -1;
     }
 
     /* Configure pins as outputs */
@@ -60,12 +60,14 @@ void main(void)
         red_on();
         k_msleep(5000);
 
-        /* YELLOW */
-        yellow_on();
-        k_msleep(2000);
-
         /* GREEN */
         green_on();
         k_msleep(5000);
+
+		/* YELLOW */
+        yellow_on();
+        k_msleep(2000);
     }
+	
+    return 0;
 }
