@@ -2,40 +2,70 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 
-#define SLEEP_TIME_MS 500
+/* RGB LED pins */
+#define RED_PIN     18
+#define GREEN_PIN   19
+#define BLUE_PIN    1
 
-// Define o LED usando Device Tree
-#define LED0_NODE DT_ALIAS(led0)
+/* GPIO controllers */
+#define RED_GPIO    DT_NODELABEL(gpiob)
+#define GREEN_GPIO  DT_NODELABEL(gpiob)
+#define BLUE_GPIO   DT_NODELABEL(gpiod)
 
-// Verifica se o LED está definido no Device Tree
-#if DT_NODE_HAS_STATUS(LED0_NODE, okay)
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-#else
-#error "Unsupported board: led0 devicetree alias is not defined"
-#endif
+static const struct device *gpiob = DEVICE_DT_GET(RED_GPIO);
+static const struct device *gpiod = DEVICE_DT_GET(BLUE_GPIO);
+
+void leds_off(void)
+{
+    gpio_pin_set(gpiob, RED_PIN, 1);
+    gpio_pin_set(gpiob, GREEN_PIN, 1);
+    gpio_pin_set(gpiod, BLUE_PIN, 1);
+}
+
+void red_on(void)
+{
+    leds_off();
+    gpio_pin_set(gpiob, RED_PIN, 0);
+}
+
+void yellow_on(void)
+{
+    leds_off();
+
+    /* Red + Green = Yellow */
+    gpio_pin_set(gpiob, RED_PIN, 0);
+    gpio_pin_set(gpiob, GREEN_PIN, 0);
+}
+
+void green_on(void)
+{
+    leds_off();
+    gpio_pin_set(gpiob, GREEN_PIN, 0);
+}
 
 void main(void)
 {
-    int ret;
-
-    // Verifica se o device está pronto
-    if (!gpio_is_ready_dt(&led)) {
-        printk("Error: LED device %s is not ready\n", led.port->name);
+    if (!device_is_ready(gpiob) || !device_is_ready(gpiod)) {
         return;
     }
 
-    // Configura o pino como saída
-    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
-    if (ret < 0) {
-        printk("Error %d: failed to configure LED pin\n", ret);
-        return;
-    }
-
-    printk("LED blinking on %s pin %d\n", led.port->name, led.pin);
+    /* Configure pins as outputs */
+    gpio_pin_configure(gpiob, RED_PIN, GPIO_OUTPUT_HIGH);
+    gpio_pin_configure(gpiob, GREEN_PIN, GPIO_OUTPUT_HIGH);
+    gpio_pin_configure(gpiod, BLUE_PIN, GPIO_OUTPUT_HIGH);
 
     while (1) {
-        // Toggle do LED usando a nova API
-        gpio_pin_toggle_dt(&led);
-        k_msleep(SLEEP_TIME_MS);
+
+        /* RED */
+        red_on();
+        k_msleep(5000);
+
+        /* YELLOW */
+        yellow_on();
+        k_msleep(2000);
+
+        /* GREEN */
+        green_on();
+        k_msleep(5000);
     }
 }
